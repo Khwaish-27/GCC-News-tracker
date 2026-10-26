@@ -1,21 +1,26 @@
 # Google News searches for the GCC News Tracker
 #
 # One search per line:   type | name | Google News query
-# type is one of: new, leaders, industry, world
-#   (the type only says why the search exists — each article is sorted by its own headline)
+# type is one of: india, world
+#   world searches also run in the UK edition of Google News, for wider coverage.
+#   (Each article is sorted into a category and a tab by its own headline, not by the search.)
 #
 # Query tips (same syntax as the Google News search box):
 #   "exact phrase"   OR between alternatives   -word excludes a word
 #   Don't add when:/after:/before: — the script adds the dates.
 #   Google returns at most 100 results per search and period, so keep searches narrow.
 
-new      | GCCs opening              | ("global capability centre" OR "global capability center" OR "capability centre" OR "capability center") (opens OR launches OR inaugurates OR "sets up" OR establishes OR unveils) -"Gulf Cooperation"
-new      | GCCs opening in India     | GCC (opens OR launches OR inaugurates OR "sets up" OR "to set up" OR unveils) (India OR Bengaluru OR Bangalore OR Hyderabad OR Pune OR Chennai OR Gurugram OR Noida OR Mumbai OR Kochi OR Ahmedabad OR Kolkata OR Coimbatore OR Jaipur)
-new      | GCC expansions            | ("global capability centre" OR "global capability center" OR GCC) (expands OR expansion OR "second centre" OR "new campus" OR "new office" OR "scales up") -Gulf -Saudi -UAE -Qatar
-new      | Tech and innovation centres | ("tech centre" OR "technology centre" OR "innovation centre" OR "innovation hub" OR "engineering centre" OR "captive centre" OR "shared services centre") (opens OR launches OR inaugurates OR "sets up")
-leaders  | GCC leaders               | ("capability centre" OR "capability center" OR GCC) (appoints OR names OR joins OR elevates OR "takes charge" OR "steps down") (head OR leader OR "managing director" OR "site leader") -Gulf
-leaders  | GCC site heads            | ("head of India GCC" OR "India GCC head" OR "site leader" OR "centre head" OR "center head" OR "GCC head") (appoints OR names OR joins OR elevates OR "to lead")
-industry | GCC industry              | ("global capability centres" OR "global capability centers" OR "GCC sector" OR "GCC market" OR "GCC hiring" OR "GCC talent" OR "GCC ecosystem")
-industry | GCC reports and policy    | ("global capability" OR "GCC policy" OR "GCCs") (report OR survey OR study OR Nasscom OR Zinnov OR ANSR OR "Everest Group" OR policy) -Gulf -Saudi
-world    | GCCs outside India        | ("global capability centre" OR "global capability center" OR "shared services centre" OR "global business services") (Poland OR Philippines OR Mexico OR "Costa Rica" OR Malaysia OR Vietnam OR Egypt OR Portugal OR Romania OR Brazil OR Colombia OR "Sri Lanka" OR Hungary OR Czech)
-world    | Global business services  | ("global business services" OR "GBS centre" OR "GBS center" OR "shared services center") (opens OR launches OR expands OR "new hub")
+india | GCCs opening                | ("global capability centre" OR "global capability center" OR "capability centre" OR "capability center") (opens OR launches OR inaugurates OR "sets up" OR establishes OR unveils) -"Gulf Cooperation"
+india | GCCs opening in India       | GCC (opens OR launches OR inaugurates OR "sets up" OR "to set up" OR unveils) (India OR Bengaluru OR Bangalore OR Hyderabad OR Pune OR Chennai OR Gurugram OR Noida OR Mumbai OR Kochi OR Ahmedabad OR Kolkata OR Coimbatore OR Jaipur)
+india | GCC expansions              | ("global capability centre" OR "global capability center" OR GCC) (expands OR expansion OR "second centre" OR "new campus" OR "new office" OR "scales up" OR hiring) -Gulf -Saudi -UAE -Qatar
+india | Tech and innovation centres | ("tech centre" OR "technology centre" OR "innovation centre" OR "engineering centre" OR "captive centre" OR "shared services centre") (opens OR launches OR inaugurates OR "sets up")
+india | GCC leaders                 | ("capability centre" OR "capability center" OR GCC) (appoints OR names OR joins OR elevates OR "takes charge" OR "steps down") (head OR leader OR "managing director" OR "site leader") -Gulf
+india | GCC site heads              | ("head of India GCC" OR "India GCC head" OR "site leader" OR "centre head" OR "center head" OR "GCC head") (appoints OR names OR joins OR elevates OR "to lead")
+india | GCC deals                   | (GCC OR "global capability centre" OR "global capability center") (acquires OR acquisition OR "takes over" OR sells OR transfer OR "build-operate-transfer" OR BOT OR partnership OR "ties up") -Gulf -Saudi
+india | GCC cuts and closures       | (GCC OR "global capability centre" OR "global capability center") (layoffs OR "job cuts" OR shuts OR closes OR closure OR downsizing) -Gulf -Saudi
+india | GCC industry                | ("global capability centres" OR "global capability centers" OR "GCC sector" OR "GCC market" OR "GCC hiring" OR "GCC talent" OR "GCC ecosystem" OR "GCC policy")
+india | GCC reports                 | ("global capability" OR "GCCs") (report OR survey OR study OR Nasscom OR Zinnov OR ANSR OR "Everest Group" OR Deloitte OR EY) -Gulf -Saudi
+world | GCCs in Europe              | ("global capability centre" OR "global capability center" OR "shared services centre" OR "shared services center" OR "global business services" OR "business services centre") (Poland OR Portugal OR Romania OR Hungary OR Czech OR Spain OR Ireland OR Bulgaria OR Lithuania OR Serbia OR Greece)
+world | GCCs in Asia-Pacific        | ("global capability centre" OR "global capability center" OR "shared services centre" OR "shared services center" OR "global business services" OR "global in-house centre") (Philippines OR Malaysia OR Vietnam OR Singapore OR "Sri Lanka" OR Indonesia OR Thailand OR China OR Japan OR Australia)
+world | GCCs in Latin America & Africa | ("global capability centre" OR "global capability center" OR "shared services centre" OR "shared services center" OR "global business services" OR "nearshore centre") (Mexico OR "Costa Rica" OR Brazil OR Colombia OR Argentina OR Chile OR Uruguay OR Egypt OR Morocco OR "South Africa" OR Kenya)
+world | GCC strategy worldwide      | ("global capability centers" OR "global capability centres" OR "global business services" OR "shared services") (nearshoring OR offshoring OR "operating model" OR CFO OR "new hub" OR "opens hub") -India -Gulf -Saudi

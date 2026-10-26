@@ -50,6 +50,7 @@ STORY_GAP  = 7       # days: same company + same type of news within this gap = 
 
 GN_URL   = "https://news.google.com/rss/search"
 EDITIONS = [{"hl": "en-IN", "gl": "IN", "ceid": "IN:en"}, {"hl": "en-US", "gl": "US", "ceid": "US:en"}]
+UK       = {"hl": "en-GB", "gl": "GB", "ceid": "GB:en"}   # extra edition for "world" searches
 GN_CAP   = 100       # Google News returns at most this many results per search
 GN_PAUSE = 1.5       # seconds between requests
 
@@ -135,7 +136,7 @@ def fetch(days: int) -> tuple[list[dict], dict]:
     stats = {"requests": 0, "failed": 0}
     found = []
     for s in searches:
-        for ed in EDITIONS:
+        for ed in EDITIONS + ([UK] if s["type"] == "world" else []):
             for a, b in weeks:
                 for it in _window(s["query"], ed, a, b, stats):
                     it["search"] = s["name"]
@@ -186,55 +187,150 @@ _CAPABILITY = re.compile(r"capability|captive|shared services|business services"
 _NOT_NEWS = re.compile(r"vacanc|hiring for (?:the )?(?:role|post|position)|apply now|walk-?in|\binternship\b|"
                        r"\(.*\b[A-Z]{2}\b.*\)$", re.I)
 _GUIDE = re.compile(r"^(?:how to|a guide|guide to|complete guide|step-by-step)|\bguide\b.*\(|\(.*guide", re.I)
-_POLICY = re.compile(r"\bpolic(?:y|ies)\b|\brules\b|\bsummit\b|\bconclave\b|\breport\b|\bsurvey\b|\bstudy\b|"
-                     r"\bindex\b|\branking\b|\btargets?\b \d|\binvites?\b|\burges?\b|\bwoos?\b|\bmission\b|"
-                     r"\battract\w*|\bboom\b|\btrends?\b|\boutlook\b|\bshould\b|^bs edit|\beditorial\b|\bopinion\b|"
-                     r"\bfor (?:\w+ (?:and|&) )?(?:mncs? (?:and|&) )?gccs?\b|\bgcc os\b", re.I)
 # "GCC" is also the Greater Chennai Corporation
 _CIVIC = re.compile(r"monsoon|flood|\bdrains?\b|stormwater|garbage|sanitation|\bpark\b|\bward\b|councillor|mayor|"
                     r"property tax|relief cent|kitchens|\broads?\b|bus shelter|commissioner|mosquito|dengue|stray|"
                     r"cattle|encroach|chennai corporation|greater chennai|mylapore|adyar|velachery|t\.? nagar|"
                     r"anna nagar|tambaram|perambur|royapuram|corporation school|crematori|burial|zone \d", re.I)
 
+
+def _rx(pattern: str) -> re.Pattern:
+    return re.compile(pattern, re.I)
+
+
+# Eight categories in two groups — the way a GCC analyst would file the news.
 TYPES = {
-    "leaders": {
-        "label": "GCC leaders",
-        "hint": "New heads and leadership moves at GCCs",
-        "verb": re.compile(r"\bappoint\w*|\bnames?\b|\bnamed\b|\belevat\w+|\bjoins?\b|\bhires?\b|\bropes in\b|"
-                           r"\btakes? (?:over|charge)\b|\bto (?:lead|head)\b|\bsteps? down\b|\bresign\w*|\bquits?\b|"
-                           r"\bmoves on\b|\bnew (?:head|leader|md|ceo|chief)\b|\bpromot\w+", re.I),
-        "role": re.compile(r"\bhead\b|\bleader\b|\bceo\b|\bmd\b|managing director|\bpresident\b|\bdirector\b|"
-                           r"\bchief\b|\bvp\b|vice president|country manager|\bto (?:lead|head)\b", re.I),
-    },
-    "new": {
-        "label": "New GCCs & expansions",
-        "hint": "Companies opening, expanding or planning GCCs",
-        # clear opening words count on their own
-        "strong": re.compile(
-            r"\bopens?\b|\bopened\b|\blaunch(?:es|ed)?\b|\binaugurat\w+|\bsets? up\b|\bsetting up\b|"
-            r"\bestablish(?:es|ed)?\b|\bunveil\w*|\bdebuts?\b|\bstarts? operations\b|\bbegins operations\b|"
-            r"\bgoes live\b|\bfirst (?:gcc|global capability|india (?:gcc|centre|center))|"
-            r"\bsecond (?:gcc|cent(?:re|er)|campus|site)\b|"
-            r"\bnew (?:gcc|global capability cent\w*|capability cent\w*|tech(?:nology)? cent\w*|innovation cent\w*|"
-            r"campus|facility)\b(?!\s+(?:roles|jobs|hires|hiring|talent|employees|skills|leaders|model|boom|"
-            r"wave|story|era|rules|policy))", re.I),
-        # softer words need a named company or city ("Truist expands Hyderabad GCC")
-        "soft": re.compile(r"\bexpand(?:s|ed|ing)?\b|\bexpansion\b|\bscal(?:es|ing) up\b|"
-                           r"\badds? \d[\d,]* (?:jobs|seats|employees|roles|people)\b|"
-                           r"\b(?:plans?|to) (?:open|set up|launch|expand|establish)\b", re.I),
-    },
-    "industry": {
-        "label": "GCC industry news",
-        "hint": "Reports, hiring, policy and trends across the sector",
-    },
+    "new":       {"group": "Company moves", "label": "New GCCs",
+                  "hint": "Companies setting up a GCC, or announcing one"},
+    "expansion": {"group": "Company moves", "label": "Expansions",
+                  "hint": "New cities, campuses, headcount or capabilities at existing GCCs"},
+    "leaders":   {"group": "Company moves", "label": "Leadership",
+                  "hint": "Appointments and exits at GCCs"},
+    "deals":     {"group": "Company moves", "label": "Deals & partnerships",
+                  "hint": "GCCs bought, sold or transferred, and the partners that build them"},
+    "cuts":      {"group": "Company moves", "label": "Cuts & closures",
+                  "hint": "Layoffs, shutdowns and downsizing at GCCs"},
+    "talent":    {"group": "Sector trends", "label": "Talent & jobs",
+                  "hint": "Hiring, salaries, skills and workforce trends"},
+    "policy":    {"group": "Sector trends", "label": "Policy & locations",
+                  "hint": "Government policy, incentives, cities and office space"},
+    "market":    {"group": "Sector trends", "label": "Market & research",
+                  "hint": "Reports, surveys, market size and commentary"},
 }
+
+_LEAD_VERB = _rx(r"\bappoint\w*|\bnames?\b|\bnamed\b|\belevat\w+|\bjoins?\b|\bhires?\b(?! \d)|\bropes in\b|"
+                 r"\btakes? (?:over|charge) as\b|\btakes charge\b|\bto (?:lead|head)\b|\bsteps? down\b|\bresign\w*|"
+                 r"\bquits?\b|\bmoves on\b|\bnew (?:head|leader|md|ceo|chief)\b|\bpromot\w+|\bsucceeds?\b")
+_LEAD_ROLE = _rx(r"\bhead\b|\bleader\b|\bceo\b|\bmd\b|managing director|\bpresident\b|\bdirector\b|\bchief\b|"
+                 r"\bvp\b|vice president|country manager|\bto (?:lead|head)\b|\bcoo\b|\bcfo\b|\bcto\b|\bcio\b")
+_CUTS = _rx(r"lay-?offs?\b|laid off|lays off|laying off|job cuts?|jobs? cut\b|\bcuts? \d[\d,]* (?:jobs|roles|"
+            r"employees|staff|people)|\bcuts? jobs\b|retrench|redundanc|downsiz|\bshuts?\b|\bshutting\b|shut down|"
+            r"\bcloses?\b(?! (?:deal|round|funding|in on))|\bclosure\b|winds? down|wind-down|scal(?:es|ing) back|"
+            r"exits? india|pulls? out of|\bvrs\b")
+_VENDOR = _rx(r"\bfor (?:\w+ (?:and|&) )?(?:mncs? (?:and|&) )?gccs?\b|\bgcc (?:banking|vertical|practice|solutions?|"
+              r"services|platform|os|offering|desk|unit|suite|programme|program)\b|\bgccs? as a service\b")
+_AGGREGATE = _rx(r"^(?:over |nearly |around |about )?\d[\d,.+%]*\s|\b\d{2,}\+? (?:new )?(?:gccs|centres|centers|"
+                 r"companies|firms|mncs|japanese|us|german)\b|^india'?s gccs?\b|^india'?s\b")
+_CAP_ADD = _rx(r"\bcoe\b|cent(?:re|er) of excellence|\blab\b|\bai hub\b|\bnew capabilit|\bpractice\b")
+_SETUP = _rx(r"\bsets? up\b|\bsetting up\b|\bestablish(?:es|ed|ing)?\b|\binaugurat\w+|\bopens?\b|\bopened\b|"
+             r"\blaunch(?:es|ed)?\b|\bunveil\w*|\bdebuts?\b|\bstarts? operations\b|\bbegins operations\b|"
+             r"\bgoes live\b|\bfirst (?:gcc|global capability|india (?:gcc|centre|center)|tech(?:nology)? cent)|"
+             r"\b(?:plans?|to) (?:open|set up|launch|establish)\b|\bmarks? (?:its )?entry\b|\benters? india\b")
+_EXPAND = _rx(r"\bexpand(?:s|ed|ing)?\b|\bexpansion\b|\bscal(?:es|ing) up\b|\bramps? up\b|\bdoubles?\b|"
+              r"\bsecond (?:gcc|cent(?:re|er)|campus|site|office|facility)\b|\bnew (?:campus|office|facility|site|"
+              r"floor|tower)\b|\bbigger\b|\blarger (?:campus|office)\b|\badds? \d[\d,]* (?:jobs|seats|employees|"
+              r"roles|people|engineers)\b|\bto hire \d|\bhire \d[\d,]*\b|\bheadcount to\b")
+_DEALS = _rx(r"\bacquir\w*|\bacquisition\b|\btakes? over\b(?! as)|\btakeover\b|\bsells?\b|\bsold\b|\bdivest\w*|"
+             r"\btransfer(?:s|red)? (?:of )?(?:its |the |a )?(?:gcc|global capability|cent(?:re|er)|captive|operations)|"
+             r"build[- ]operate[- ]transfer|\bbot\b|\bpartner(?:s|ship|ed|ing)?\b|\bties? up\b|\btie-up\b|"
+             r"\bjoint venture\b|\bhelps? (?:build|set up|scale|launch)\b|\bwins? (?:deal|contract|mandate)\b|"
+             r"\bstake\b")
+_TREND = _rx(r"\bboom\b|\brise\b|\bpowerhouse\b|\bdestination\b|\bgrowth story\b|\bwave\b|\bmomentum\b|\bera\b|"
+             r"\bfuture of\b|\bgetting bigger\b")
+_QUOTE = _rx(r"\bsays\b|\bsaid\b|\baccording to\b")
+_STATE_START = r"(?:uttar pradesh|up|maharashtra|karnataka|telangana|tamil nadu|gujarat|kerala|andhra pradesh|" \
+               r"odisha|haryana|punjab|rajasthan|madhya pradesh|west bengal|bihar|assam|j&k|meghalaya|goa)"
+_POLICY = _rx(rf"^{_STATE_START}\b|\bpolic(?:y|ies)\b|\brules\b|\bincentive|\bsubsid|\bsummit\b|\bconclave\b|"
+              r"\bminister|\bgovernment\b|\bgovt\b|\bcm\b|\bchief minister\b|\bmou\b|\binvites?\b|\bwoos?\b|"
+              r"\battract\w*|\btargets? \d|\btier[- ](?:2|ii|two|3)\b|\bnon-metro|\bsmaller cities\b|\bleasing\b|"
+              r"\blease[sd]?\b|\bsq\.? ?ft\b|\bsquare feet\b|\boffice (?:space|demand|market|absorption|stock)\b|"
+              r"\breal estate\b|\bco-?working\b|\bflex(?:ible)? (?:space|office|workspace)|\bgift city\b|\bsez\b|"
+              r"\bdata cent")
+_TALENT = _rx(r"\bhiring\b|\bhires?\b|\bjobs?\b|\btalent\b|\bskills?\b|\bsalar(?:y|ies)\b|\bpay\b|\bwages?\b|"
+              r"\bworkforce\b|\bemployees?\b|\bfreshers?\b|\bgraduates?\b|\bwomen\b|\bdiversity\b|\battrition\b|"
+              r"\bupskill|\breskill|\bcareers?\b|\bprofessionals\b|\bcampus hiring\b|\bwork from|\bhybrid work\b|"
+              r"\bcompensation\b|\bappraisal")
+_OPINION = _rx(r"^opinion\b|^bs edit|\beditorial\b|\bshould\b|\bwhy\b|\bhow\b.*\?|\?$")
+
+
+def _category(t: str, company: str) -> str:
+    """One category per headline. Rules are checked in this order; the first that fits wins."""
+    named = bool(company) and t.lower().startswith(company.lower())   # the company is the headline's subject
+    if _LEAD_VERB.search(t) and _LEAD_ROLE.search(t):
+        return "leaders"
+    if _CUTS.search(t):
+        return "cuts"
+    if _GUIDE.search(t) or _VENDOR.search(t):
+        return "market"
+    if _POLICY.search(t) and not (named and _SETUP.search(t)):
+        return "policy"
+    if _AGGREGATE.search(t) and not named:
+        return "talent" if _TALENT.search(t) else "market"
+    # opinion, trend pieces and quotes are sector news, not a company's move
+    commentary = _OPINION.search(t) or (_TREND.search(t) and not named) or (_QUOTE.search(t) and not _SETUP.search(t))
+    if not commentary:
+        if _DEALS.search(t):
+            return "deals"
+        if _CAP_ADD.search(t) and (named or _CITY.search(t)):
+            return "expansion"
+        if _SETUP.search(t):
+            return "new"
+        if _EXPAND.search(t) and (named or _CITY.search(t)):
+            return "expansion"
+    if _TALENT.search(t):
+        return "talent"
+    return "market"
+
+
+# ── where the news is ─────────────────────────────────────────────
 
 _INDIA = re.compile(r"\bindia\b|\bindian\b|bengaluru|bangalore|hyderabad|chennai|\bpune\b|mumbai|\bdelhi\b|noida|"
                     r"gurugram|gurgaon|kolkata|ahmedabad|kochi|coimbatore|jaipur|indore|chandigarh|"
                     r"thiruvananthapuram|visakhapatnam|vizag|bhubaneswar|mysuru|mysore|nagpur|vadodara|lucknow|"
                     r"gift city|karnataka|telangana|tamil nadu|maharashtra|kerala|gujarat|uttar pradesh|andhra|odisha|"
                     r"haryana|punjab|rajasthan|madhya pradesh|bihar|west bengal|uttarakhand|dehradun|j&k|jammu|"
-                    r"kashmir|srinagar|goa|assam|guwahati|madras|iit|nasscom|madhapur|whitefield|hitec city", re.I)
+                    r"kashmir|srinagar|goa|assam|guwahati|meghalaya|madras|\biit\b|nasscom|\bstpi\b|meity|madhapur|"
+                    r"whitefield|hitec city|\bcrore\b|\blakh\b|\brs\.? ?\d", re.I)
+_INDIA_CASED = re.compile(r"\bUP\b|₹|\bCM\b")
+# Untagged headlines from Indian outlets are almost always about India
+_INDIAN_PUB = re.compile(
+    r"economic ?times|economictimes|\bet\b|livemint|\bmint\b|business standard|moneycontrol|businessline|"
+    r"financial express|the hindu|times of india|hindustan times|indian express|ndtv|news18|deccan|telangana today|"
+    r"yourstory|inc42|businessworld|\bbw\b|people matters|ethrworld|etcio|express computer|cxotoday|dataquest|\bdq\b|"
+    r"india today|outlook|firstpost|asianet|the print|scroll|medianama|entrackr|analytics india|\baim\b|"
+    r"indian masterminds|hrtoday|hr today|siliconindia|free press|mid-day|pioneer|tribune|the statesman|"
+    r"business today|fortune india|forbes india|cnbc-?tv18|cnbctv18|zee|\bpti\b|\bians\b|devdiscourse|the federal|"
+    r"south first|newsbytes|lokmat|odisha tv|orissapost|new indian express|rediff|thehansindia|hans india|"
+    r"\.in$|\.co\.in$", re.I)
+
+_PLACES_INDIA = [
+    ("Bengaluru", r"bengaluru|bangalore|whitefield|manyata"), ("Hyderabad", r"hyderabad|madhapur|hitec city"),
+    ("Chennai", r"chennai|madras"), ("Pune", r"pune"), ("Mumbai", r"navi mumbai|mumbai"), ("Noida", r"noida"),
+    ("Gurugram", r"gurugram|gurgaon"), ("Delhi NCR", r"delhi|\bncr\b"), ("Kolkata", r"kolkata"),
+    ("Ahmedabad", r"ahmedabad"), ("GIFT City", r"gift city"), ("Kochi", r"kochi"), ("Coimbatore", r"coimbatore"),
+    ("Jaipur", r"jaipur"), ("Indore", r"indore"), ("Chandigarh", r"chandigarh|mohali"),
+    ("Thiruvananthapuram", r"thiruvananthapuram|trivandrum"), ("Visakhapatnam", r"visakhapatnam|vizag"),
+    ("Bhubaneswar", r"bhubaneswar"), ("Mysuru", r"mysuru|mysore"), ("Nagpur", r"nagpur"), ("Vadodara", r"vadodara"),
+    ("Lucknow", r"lucknow"), ("Dehradun", r"dehradun"), ("Srinagar", r"srinagar"),
+    ("Uttar Pradesh", r"uttar pradesh"), ("Maharashtra", r"maharashtra"), ("Karnataka", r"karnataka"),
+    ("Telangana", r"telangana"), ("Tamil Nadu", r"tamil nadu"), ("Kerala", r"kerala"), ("Gujarat", r"gujarat"),
+    ("Odisha", r"odisha"), ("Andhra Pradesh", r"andhra"), ("Haryana", r"haryana"), ("Punjab", r"punjab"),
+    ("Rajasthan", r"rajasthan"), ("Madhya Pradesh", r"madhya pradesh"), ("West Bengal", r"west bengal"),
+    ("Jammu & Kashmir", r"j&k|jammu|kashmir"), ("Meghalaya", r"meghalaya"), ("Assam", r"assam|guwahati"),
+    ("Goa", r"\bgoa\b"),
+]
+_PLACES_INDIA = [(name, re.compile(rf"\b(?:{pat})\b", re.I)) for name, pat in _PLACES_INDIA]
+
 _COUNTRIES = [
     ("Poland", r"poland|polish|krak[oó]w|warsaw|wroc[lł]aw|gda[nń]sk|[lł][oó]d[zź]|katowice"),
     ("Philippines", r"philippines|manila|cebu|makati|taguig"),
@@ -249,22 +345,37 @@ _COUNTRIES = [
     ("Singapore", r"singapore"), ("China", r"china|shanghai|dalian|chengdu"), ("Japan", r"japan|tokyo"),
     ("Indonesia", r"indonesia|jakarta"), ("Thailand", r"thailand|bangkok"), ("Bulgaria", r"bulgaria|sofia"),
     ("Serbia", r"serbia|belgrade"), ("Lithuania", r"lithuania|vilnius"), ("Turkey", r"turkey|t[uü]rkiye|istanbul"),
-    ("Saudi Arabia", r"saudi|riyadh"), ("UAE", r"\buae\b|dubai|abu dhabi"), ("Canada", r"canada|toronto"),
-    ("Latin America", r"latin america|latam"),
-    ("United States", r"\bus\b|u\.s\.|united states|(?<!latin )america\b|texas|dallas"), ("UK", r"\buk\b|britain|london"),
+    ("Greece", r"greece|athens"), ("Saudi Arabia", r"saudi|riyadh"), ("UAE", r"\buae\b|dubai|abu dhabi"),
+    ("Canada", r"canada|toronto"), ("Latin America", r"latin america|latam"),
+    ("United States", r"\bus\b|u\.s\.|united states|(?<!latin )america\b|texas|dallas"), ("UK", r"\buk\b|britain|london|manchester|birmingham|belfast|glasgow|edinburgh|leeds"),
     ("Australia", r"australia|sydney|melbourne"), ("Germany", r"germany|berlin|munich"),
     ("Uruguay", r"uruguay|montevideo"), ("Guatemala", r"guatemala"), ("Nigeria", r"nigeria|lagos"),
+    ("Europe", r"europe|european|\bcee\b"), ("Asia-Pacific", r"asia-pacific|asia pacific|\bapac\b|southeast asia"),
 ]
 _COUNTRIES = [(name, re.compile(rf"\b(?:{pat})\b", re.I)) for name, pat in _COUNTRIES]
 _CITY = re.compile(r"\b(?:bengaluru|bangalore|hyderabad|chennai|pune|mumbai|delhi|noida|gurugram|gurgaon|kolkata|"
                    r"ahmedabad|kochi|coimbatore|jaipur|indore|chandigarh|thiruvananthapuram|visakhapatnam|vizag|"
-                   r"bhubaneswar|mysuru|mysore|nagpur|vadodara|lucknow|gift city|krak[oó]w|warsaw|wroc[lł]aw|manila|"
-                   r"cebu|guadalajara|monterrey|kuala lumpur|penang|ho chi minh|cairo|lisbon|porto|bucharest|cluj|"
-                   r"bogot[aá]|medell[ií]n|colombo|budapest|prague|brno|m[aá]laga|casablanca|cape town)\b", re.I)
+                   r"bhubaneswar|mysuru|mysore|nagpur|vadodara|lucknow|gift city|dehradun|krak[oó]w|warsaw|"
+                   r"wroc[lł]aw|manila|cebu|guadalajara|monterrey|kuala lumpur|penang|ho chi minh|cairo|lisbon|porto|"
+                   r"bucharest|cluj|bogot[aá]|medell[ií]n|colombo|budapest|prague|brno|m[aá]laga|casablanca|"
+                   r"cape town)\b", re.I)
+
+
+def _where(t: str, publisher: str) -> tuple[str, str]:
+    """(tab, place): tab is "india" or "global"; place is a city, state or country, or ""."""
+    if _INDIA.search(t) or _INDIA_CASED.search(t):
+        place = next((n for n, rx in _PLACES_INDIA if rx.search(t)), "")
+        if not place and re.search(r"\bUP\b", t):
+            place = "Uttar Pradesh"
+        return "india", place or "India"
+    country = next((n for n, rx in _COUNTRIES if rx.search(t)), "")
+    if country:
+        return "global", country
+    return ("india", "") if _INDIAN_PUB.search(publisher or "") else ("global", "")
 
 
 def classify(a: dict) -> dict | None:
-    """Type of news, region and company for one headline — or None if it isn't GCC news."""
+    """Category, tab, place and company for one headline — or None if it isn't GCC news."""
     t = a["title"]
     if not (_GCC.search(t) or _LEADER_ROLE.search(t)):
         return None
@@ -274,20 +385,13 @@ def classify(a: dict) -> dict | None:
         return None
     if _NOT_NEWS.search(t):
         return None
+    # a university or startup "innovation centre" isn't a GCC
+    if re.search(r"universit|college|\bschool\b|students|incubat|startups?\b", t, re.I) \
+            and not re.search(r"\bgccs?\b|capability|captive|shared services", t, re.I):
+        return None
     company = company_of(t)
-    city = _CITY.search(t)
-    lead, new = TYPES["leaders"], TYPES["new"]
-    if lead["verb"].search(t) and lead["role"].search(t):
-        kind = "leaders"
-    elif _GUIDE.search(t) or _POLICY.search(t):
-        kind = "industry"
-    elif new["strong"].search(t) or (new["soft"].search(t) and (city or
-                                     (company and t.lower().startswith(company.lower())))):
-        kind = "new"
-    else:
-        kind = "industry"
-    country = "India" if _INDIA.search(t) else next((n for n, rx in _COUNTRIES if rx.search(t)), "")
-    return {**a, "type": kind, "country": country, "company": company}
+    tab, place = _where(t, a.get("publisher", ""))
+    return {**a, "type": _category(t, company), "tab": tab, "place": place, "company": company}
 
 
 # ── company name from the headline (no company list) ─────────────
@@ -417,7 +521,10 @@ def stories(arts: list[dict]) -> list[dict]:
             "id": hashlib.sha1(_key(lead["title"]).encode()).hexdigest()[:12],
             "date": min(a["date"] for a in s["arts"]),
             "type": lead["type"],
-            "country": next((a["country"] for a in arts_ if a["country"]), ""),
+            # a story is Indian if any headline about it is; the most specific place wins
+            "tab": "india" if any(a["tab"] == "india" for a in arts_) else "global",
+            "place": next((a["place"] for a in arts_ if a["place"] and a["place"] != "India"),
+                          next((a["place"] for a in arts_ if a["place"]), "")),
             "company": lead["company"],
             "title": lead["title"], "url": lead["url"], "publisher": lead["publisher"],
             "more": [{"publisher": a["publisher"], "url": a["url"], "title": a["title"]} for a in arts_[1:6]],
@@ -450,7 +557,7 @@ def write_rss(items: list[dict]) -> None:
         out += ["<item>", f"<title>{escape(title)}</title>", f"<link>{escape(s['url'])}</link>",
                 f'<guid isPermaLink="false">{s["id"]}</guid>', f"<pubDate>{when}</pubDate>",
                 f"<category>{escape(label)}</category>",
-                f"<description>{escape(s['publisher'] + (' · ' + s['country'] if s['country'] else ''))}</description>",
+                f"<description>{escape(s['publisher'] + (' · ' + s['place'] if s['place'] else ''))}</description>",
                 "</item>"]
     out += ["</channel>", "</rss>", ""]
     RSS.write_text("\n".join(out), encoding="utf-8")
@@ -463,7 +570,7 @@ def write_page(items: list[dict], checked: int) -> None:
         "updated": f"{now.day} {now.strftime('%b %Y, %H:%M')} IST",
         "today": now.date().isoformat(),
         "checked": checked,
-        "types": [{"key": k, "label": v["label"], "hint": v["hint"]} for k, v in TYPES.items()],
+        "types": [{"key": k, "label": v["label"], "hint": v["hint"], "group": v["group"]} for k, v in TYPES.items()],
         "stories": items,
     }
     blob = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
