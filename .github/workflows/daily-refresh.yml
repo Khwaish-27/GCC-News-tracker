@@ -1,0 +1,32 @@
+name: Daily refresh
+
+on:
+  schedule:
+    - cron: '30 1 * * *'   # 7:00am IST
+    - cron: '30 5 * * *'   # 11:00am IST (backup, in case the first run fails)
+  workflow_dispatch:        # lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build the page from Google News
+        run: python build.py
+
+      - name: Save the refreshed page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html feed.xml data/articles.json
+          git diff --staged --quiet || git commit -m "Daily refresh $(date -u +%Y-%m-%d)"
+          git pull origin main --rebase
+          git push

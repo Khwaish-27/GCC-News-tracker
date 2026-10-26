@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>__TITLE__</title>
+<meta name="description" content="Global Capability Centre (GCC) news from around the world: new centres, expansions, leaders and industry trends. Updated every morning.">
+<link rel="alternate" type="application/rss+xml" title="__TITLE__" href="feed.xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
+<style>
+/* Layout: a single reading column like a morning briefing — masthead, filter bar,
+   then stories grouped under day headings. */
+:root {
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --ink: #121a28;
+  --muted: #5b6676;
+  --line: #e2e6ec;
+  --accent: #0b6b6b;
+  --new: #0a7655;
+  --leaders: #4c45d6;
+  --industry: #a85a0a;
+  --font-head: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-ui: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1218; --surface: #161c26; --ink: #e5e9f0; --muted: #9aa4b3; --line: #273041;
+    --accent: #52c2bd; --new: #4cc69c; --leaders: #a29dff; --industry: #eba75c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1218; --surface: #161c26; --ink: #e5e9f0; --muted: #9aa4b3; --line: #273041;
+  --accent: #52c2bd; --new: #4cc69c; --leaders: #a29dff; --industry: #eba75c;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--font-ui); }
+.wrap {
+  max-width: 860px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+
+/* masthead */
+header .wrap { padding-block: 40px 22px; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
+.eyebrow { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+h1 { margin: 0; font: 600 clamp(2rem, 6vw, 2.9rem)/1.05 var(--font-head); letter-spacing: -0.01em; text-wrap: balance; }
+.dek { margin: 0; max-width: 62ch; color: var(--muted); font-size: 1.02rem; }
+.meta { margin: 4px 0 0; font-size: 0.85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.meta b { color: var(--ink); font-weight: 600; }
+
+/* filters */
+.filters { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); }
+.filters .wrap { padding-block: 12px; display: grid; gap: 10px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  --c: var(--accent);
+  font: 500 0.88rem var(--font-ui); color: var(--ink); background: var(--surface); cursor: pointer;
+  border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; display: inline-flex; gap: 7px; align-items: center;
+}
+.chip .n { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.8rem; }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.chip[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, var(--surface)); }
+.row2 { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { font: 500 0.85rem var(--font-ui); color: var(--muted); background: none; border: 0; padding: 6px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { color: var(--ink); background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+select, input[type="search"] {
+  font: inherit; font-size: 0.88rem; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px;
+}
+input[type="search"] { flex: 1 1 200px; min-width: 0; }
+
+/* stories */
+main .wrap { padding-block: 8px 56px; }
+.status { font-size: 0.85rem; color: var(--muted); margin: 14px 0 4px; }
+.day { margin: 26px 0 6px; font: 600 0.8rem var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.stories { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.story { padding: 14px 16px; display: grid; gap: 5px; min-width: 0; }
+.story + .story { border-top: 1px solid var(--line); }
+.tags { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.78rem; }
+.tag { --c: var(--accent); font-weight: 600; color: var(--c); }
+.t-new { --c: var(--new); } .t-leaders { --c: var(--leaders); } .t-industry { --c: var(--industry); }
+.where { color: var(--muted); }
+.where::before { content: "·"; margin-right: 10px; color: var(--line); }
+.hl { font: 500 1.12rem/1.35 var(--font-head); text-decoration: none; overflow-wrap: anywhere; }
+.hl:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.src { font-size: 0.85rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.src details summary { cursor: pointer; color: var(--accent); list-style: none; }
+.src details summary::-webkit-details-marker { display: none; }
+.src details[open] summary { margin-bottom: 4px; }
+.src details ul { margin: 0; padding-left: 18px; display: grid; gap: 2px; }
+.src details a { color: var(--ink); }
+.more { display: block; margin: 20px auto 0; font: 500 0.9rem var(--font-ui); color: var(--accent); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 16px; cursor: pointer; }
+.empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+
+footer .wrap { padding-block: 28px 48px; border-top: 1px solid var(--line); display: grid; gap: 8px; font-size: 0.85rem; color: var(--muted); }
+footer p { margin: 0; max-width: 70ch; }
+footer a { color: var(--accent); }
+
+@media (max-width: 520px) {
+  header .wrap { padding-block: 28px 18px; }
+  .hl { font-size: 1.04rem; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Updated every morning</div>
+    <h1>__TITLE__</h1>
+    <p class="dek">News about Global Capability Centres (GCCs), the in-house technology, operations and innovation centres that global companies run in India and around the world.</p>
+    <p class="meta" id="meta"></p>
+  </div>
+</header>
+
+<nav class="filters" aria-label="Filter the news">
+  <div class="wrap">
+    <div class="chips" id="types" role="group" aria-label="Type of news"></div>
+    <div class="row2">
+      <div class="seg" id="region" role="group" aria-label="Region">
+        <button type="button" data-v="all" aria-pressed="true">Everywhere</button>
+        <button type="button" data-v="india" aria-pressed="false">India</button>
+        <button type="button" data-v="world" aria-pressed="false">Rest of the world</button>
+      </div>
+      <select id="days" aria-label="Time period">
+        <option value="7">Last 7 days</option>
+        <option value="30" selected>Last 30 days</option>
+        <option value="90">Last 90 days</option>
+      </select>
+      <input type="search" id="q" placeholder="Search a company, city or topic" aria-label="Search a company, city or topic">
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+    <p class="status" id="status" role="status"></p>
+    <div id="list"></div>
+    <button class="more" id="more" type="button" hidden>Show older news</button>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Collected automatically every morning from public news through Google News. Headlines link to the original publishers. Stories are picked by keyword, so a few may be off-topic. When many outlets report the same news, it is shown once with the other sources listed below it.</p>
+    <p id="byline"></p>
+    <p><a href="feed.xml">Follow by RSS</a></p>
+  </div>
+</footer>
+
+<script>
+const DATA = /*__DATA__*/null;
+const TYPE = Object.fromEntries(DATA.types.map(t => [t.key, t]));
+const PAGE = 120;
+const state = { type: "all", region: "all", days: 30, q: "", limit: PAGE };
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeUrl = u => /^https?:\/\//i.test(u) ? u : "#";
+const dayMs = 864e5;
+const today = new Date(DATA.today + "T00:00:00");
+
+function since(days) {
+  const d = new Date(today.getTime() - (days - 1) * dayMs);
+  return d.toISOString().slice(0, 10);
+}
+
+function base(ignoreType) {
+  const from = since(state.days), q = state.q;
+  return DATA.stories.filter(s => {
+    if (s.date < from) return false;
+    if (!ignoreType && state.type !== "all" && s.type !== state.type) return false;
+    if (state.region === "india" && s.country !== "India") return false;
+    if (state.region === "world" && (!s.country || s.country === "India")) return false;
+    if (q && !(s.title + " " + s.company + " " + s.publisher + " " + s.country).toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function dayLabel(iso) {
+  const d = new Date(iso + "T00:00:00");
+  const diff = Math.round((today - d) / dayMs);
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Yesterday";
+  return d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" });
+}
+
+function renderTypes() {
+  const pool = base(true);
+  const chip = (key, label, color) => {
+    const n = key === "all" ? pool.length : pool.filter(s => s.type === key).length;
+    return `<button type="button" class="chip" data-key="${key}" aria-pressed="${state.type === key}"
+      ${color ? `style="--c: var(--${key})"` : ""} title="${esc(key === "all" ? "Show all news" : TYPE[key].hint)}">
+      ${color ? `<span class="dot"></span>` : ""}${esc(label)} <span class="n">${n}</span></button>`;
+  };
+  $("types").innerHTML = chip("all", "All news", false) + DATA.types.map(t => chip(t.key, t.label, true)).join("");
+}
+
+function renderList() {
+  const list = base(false);
+  const shown = list.slice(0, state.limit);
+  $("status").textContent = list.length
+    ? `${list.length} ${list.length === 1 ? "story" : "stories"}${state.type !== "all" ? " · " + TYPE[state.type].label : ""}`
+    : "";
+  if (!list.length) {
+    $("list").innerHTML = `<div class="stories"><div class="empty">No stories match. Try a longer time period or clear the search.</div></div>`;
+    $("more").hidden = true;
+    return;
+  }
+  const groups = [];
+  for (const s of shown) {
+    if (!groups.length || groups[groups.length - 1].date !== s.date) groups.push({ date: s.date, items: [] });
+    groups[groups.length - 1].items.push(s);
+  }
+  $("list").innerHTML = groups.map(g => `
+    <h2 class="day">${esc(dayLabel(g.date))}</h2>
+    <ul class="stories">${g.items.map(story).join("")}</ul>`).join("");
+  $("more").hidden = list.length <= state.limit;
+}
+
+function story(s) {
+  const t = TYPE[s.type];
+  const more = s.more.length ? `<details><summary>+ ${s.count - 1} more source${s.count - 1 === 1 ? "" : "s"}</summary>
+      <ul>${s.more.map(m => `<li><a href="${esc(safeUrl(m.url))}" target="_blank" rel="noopener">${esc(m.publisher || m.title)}</a></li>`).join("")}</ul></details>` : "";
+  return `<li class="story">
+    <div class="tags"><span class="tag t-${s.type}">${esc(t.label)}</span>${s.country ? `<span class="where">${esc(s.country)}</span>` : ""}</div>
+    <a class="hl" href="${esc(safeUrl(s.url))}" target="_blank" rel="noopener">${esc(s.title)}</a>
+    <div class="src"><span>${esc(s.publisher)}</span>${more}</div>
+  </li>`;
+}
+
+function render() { state.limit = PAGE; renderTypes(); renderList(); }
+
+function init() {
+  const recent = DATA.stories.filter(s => s.date >= since(30)).length;
+  $("meta").innerHTML = `Updated <b>${esc(DATA.updated)}</b> · <b>${recent}</b> stories in the last 30 days`;
+  if (DATA.author) {
+    $("byline").innerHTML = DATA.authorUrl
+      ? `<a href="${esc(safeUrl(DATA.authorUrl))}" target="_blank" rel="noopener">${esc(DATA.author)}</a>`
+      : esc(DATA.author);
+  }
+  $("types").addEventListener("click", e => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    state.type = b.dataset.key; render();
+  });
+  $("region").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    state.region = b.dataset.v;
+    $("region").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    render();
+  });
+  $("days").addEventListener("change", e => { state.days = +e.target.value; render(); });
+  $("q").addEventListener("input", e => { state.q = e.target.value.trim().toLowerCase(); render(); });
+  $("more").addEventListener("click", () => { state.limit += PAGE; renderList(); });
+  render();
+}
+init();
+</script>
+</body>
+</html>
