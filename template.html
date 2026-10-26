@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap">
 <style>
-/* Layout: a single reading column like a morning briefing — masthead, filter bar,
-   then stories grouped under day headings. */
+/* Layout: a wide briefing page — masthead, filter bar, then each day's stories
+   as a grid of cards (3 across on wide screens, 2 on laptops, 1 on phones). */
 :root {
   --bg: #f5f7f9;
   --surface: #ffffff;
@@ -43,7 +43,7 @@
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 var(--font-ui); }
 .wrap {
-  max-width: 860px; margin: 0 auto;
+  max-width: 1280px; margin: 0 auto;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
 }
@@ -85,15 +85,22 @@ input[type="search"] { flex: 1 1 200px; min-width: 0; }
 main .wrap { padding-block: 8px 56px; }
 .status { font-size: 0.85rem; color: var(--muted); margin: 14px 0 4px; }
 .day { margin: 26px 0 6px; font: 600 0.8rem var(--font-ui); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-.stories { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
-.story { padding: 14px 16px; display: grid; gap: 5px; min-width: 0; }
-.story + .story { border-top: 1px solid var(--line); }
+.stories {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 12px; align-items: stretch;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr));
+}
+.story {
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+}
+.story .src { margin-top: auto; padding-top: 4px; }
 .tags { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.78rem; }
 .tag { --c: var(--accent); font-weight: 600; color: var(--c); }
 .t-new { --c: var(--new); } .t-leaders { --c: var(--leaders); } .t-industry { --c: var(--industry); }
 .where { color: var(--muted); }
 .where::before { content: "·"; margin-right: 10px; color: var(--line); }
-.hl { font: 500 1.12rem/1.35 var(--font-head); text-decoration: none; overflow-wrap: anywhere; }
+.hl { font: 500 1.08rem/1.35 var(--font-head); text-decoration: none; overflow-wrap: anywhere; }
 .hl:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .src { font-size: 0.85rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
 .src details summary { cursor: pointer; color: var(--accent); list-style: none; }
@@ -102,7 +109,7 @@ main .wrap { padding-block: 8px 56px; }
 .src details ul { margin: 0; padding-left: 18px; display: grid; gap: 2px; }
 .src details a { color: var(--ink); }
 .more { display: block; margin: 20px auto 0; font: 500 0.9rem var(--font-ui); color: var(--accent); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 16px; cursor: pointer; }
-.empty { padding: 28px 16px; text-align: center; color: var(--muted); }
+.empty { grid-column: 1 / -1; padding: 28px 16px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; }
 
 footer .wrap { padding-block: 28px 48px; border-top: 1px solid var(--line); display: grid; gap: 8px; font-size: 0.85rem; color: var(--muted); }
 footer p { margin: 0; max-width: 70ch; }
