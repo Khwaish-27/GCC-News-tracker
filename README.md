@@ -2,6 +2,8 @@
 
 A public page of Global Capability Centre (GCC) news from around the world, rebuilt every morning.
 
+**Live page:** https://khwaish-27.github.io/GCC-News-tracker/ · **RSS:** https://khwaish-27.github.io/GCC-News-tracker/feed.xml
+
 - **Source:** Google News search feeds only (public, free, no API key). The searches are in `searches.txt`.
 - **Sorted into:** New GCCs & expansions · GCC leaders · GCC industry news, with a region filter (India / rest of the world).
 - **One entry per story:** when many outlets cover the same news, it shows once with the other sources listed under it.

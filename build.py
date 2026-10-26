@@ -35,7 +35,7 @@ from xml.sax.saxutils import escape
 TITLE      = "GCC News Tracker"
 AUTHOR     = ""   # e.g. "Compiled by Your Name" — shown at the bottom of the page
 AUTHOR_URL = ""   # e.g. your LinkedIn profile link
-SITE_URL   = ""   # e.g. "https://your-username.github.io/gcc-news-tracker/" — used in the RSS feed
+SITE_URL   = "https://khwaish-27.github.io/GCC-News-tracker/"   # used in the RSS feed
 # ──────────────────────────────────────────────────────────────────
 
 ROOT       = Path(__file__).resolve().parent

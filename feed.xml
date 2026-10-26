@@ -2,10 +2,11 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
 <title>GCC News Tracker</title>
-<link>https://news.google.com/</link>
+<link>https://khwaish-27.github.io/GCC-News-tracker/</link>
 <description>Global Capability Centre (GCC) news from around the world, updated daily.</description>
 <language>en</language>
-<lastBuildDate>Mon, 26 Oct 2026 12:30:15 +0000</lastBuildDate>
+<lastBuildDate>Mon, 26 Oct 2026 14:22:53 +0000</lastBuildDate>
+<atom:link href="https://khwaish-27.github.io/GCC-News-tracker/feed.xml" rel="self" type="application/rss+xml"/>
 <item>
 <title>[GCC industry news] UP Targets 500 GCCs by 2031, Plans to Link AI, Startups and DeepTech With Global Investments</title>
 <link>https://news.google.com/rss/articles/CBMilAFBVV95cUxPZHZmTDc0ai1vdXpQZ0kxZFp5aTdzVDQ4bDhGdi1VTUs2WXlILTRUX1QzUk9nZl9JcmhUYm5vaklGUFJwUlJwVGI0alpJN2tXQWt6TGswNHgyX3RhaFJMNWx5YW85XzdzRWVRcnU1bTROT2xFWklLQkJkRUlVcFZYWFRKcTQ4QTZWb0hhNDI3Vm5qZU9Y?oc=5</link>
